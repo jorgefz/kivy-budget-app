@@ -1,0 +1,69 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+
+MDScreen:
+
+	MDBoxLayout:
+		orientation: 'horizontal'
+
+		MDNavigationRail:
+			id: rail
+			hover_bg: (0.0, 0.0, 0.0, 0.2)
+			use_hover_behavior: True
+			anchor: "center"
+			color_active: get_color_from_hex("#f3ab44")
+
+			MDNavigationRailItem:
+				icon: "home"
+				on_release: screen_manager.current = 'Home'
+
+			MDNavigationRailItem:
+				icon: "chart-line"
+				on_release: screen_manager.current = 'Graphs'
+			
+			MDNavigationRailItem:
+				icon: "database"
+				on_release: screen_manager.current = 'Data'
+
+		MDBoxLayout:
+			orientation: 'vertical'
+		
+			MDToolbar:
+				title: "Budget App"
+				pos_hint: {"top": 1}
+				height: "30dp"
+			
+			ScreenManager:
+				id: screen_manager
+				HomeScreen:
+				GraphScreen:
+				DataTableScreen:
+
+<HomeScreen>:
+	name: "Home"
+	MDLabel:
+		text: "Balance"
+		pos_hint: {"center_y": 0.95, "center_x": 0.55}
+		theme_text_color: "Primary"
+		font_style: "H4"
+	MDLabel:
+		text: app.balance_text
+		pos_hint: {"center_y": 0.85, "center_x": 0.55}
+		theme_text_color: "Primary"
+		font_style: "H3"
+
+<GraphScreen>:
+	name: "Graphs"
+	MDLabel:
+		text: "Graphs"
+		pos_hint: {"center_y": 0.9}
+		halign: "center"
+		theme_text_color: "Primary"
+		font_style: "H4"
+	
+	MDBoxLayout:
+		id: expense_graph
+
+
+<DataTableScreen>:
+	name: "Data"
+
