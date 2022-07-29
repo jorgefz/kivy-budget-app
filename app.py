@@ -1,52 +1,49 @@
 from kivymd.uix.screen import MDScreen
 from kivymd.app import MDApp
-from kivy.uix.image import Image
-from kivymd.uix.button import MDFillRoundFlatIconButton, MDFillRoundFlatButton
-from kivymd.uix.textfield import MDTextField
-from kivymd.uix.label import MDLabel
-from kivymd.uix.toolbar import MDToolbar
-from kivymd.uix.navigationdrawer import MDNavigationDrawer
 from kivy.uix.screenmanager import ScreenManager
 from kivy.lang import Builder
-from kivymd.uix.boxlayout import MDBoxLayout
+
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 
+from kivy.core.window import Window
+Window.size = (900, 600)
+
+from graph import GraphScreen
+import glob
 import pandas as pd
-import matplotlib
-matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
-import matplotlib.pyplot as plt
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
-
-# Globals
-dataset = pd.read_csv("data/halifax_july_2022.csv")
-selected_cols = ["Transaction Date", "Debit Amount", "Balance"]
-row_data = [ list(row[selected_cols]) for index,row in dataset.iterrows() ]
+from kivy.properties import (
+	NumericProperty,
+	OptionProperty,
+	ObjectProperty,
+	StringProperty,
+	ListProperty,
+	BooleanProperty,
+	VariableListProperty,
+	ReferenceListProperty
+)
 
 
 class HomeScreen(MDScreen):
 	pass
 
-class GraphScreen(MDScreen):
-	
-	def update_graphs(self):
-		plt.clf() # clear plot
-		self.ids.expense_graph.clear_widgets()
-
-		unique_dates = dataset.drop_duplicates(subset=['Transaction Date'], keep='last')
-
-		plt.plot(unique_dates['Transaction Date'], unique_dates['Balance'])
-
-		self.ids.expense_graph.add_widget(FigureCanvasKivyAgg(figure=plt.gcf()))
-
-	def on_enter(self):
-		self.update_graphs()
 
 class DataTableScreen(MDScreen):
 
-	def load_table(self):
+	dataset = ObjectProperty(None)
+	'''Pandas dataframe that holds financial data'''
 
+	columns = ListProperty([])
+	'''Column names to display'''
+
+	def _generate_row_data(self) -> pd.DataFrame:
+		data = [
+			list(row[self.columns])
+			for index,row in self.dataset.iterrows() ]
+		return data
+
+	def _load_table(self):
 		self.table_widget = MDDataTable(
 			size_hint= (0.7, 0.8),
 			pos_hint= {"center_x": 0.5, "center_y": 0.5},
@@ -56,22 +53,36 @@ class DataTableScreen(MDScreen):
 				("Date", dp(30)),
 				("Amount", dp(30)),
 				("Balance", dp(30)) ],
-			row_data = row_data
+			row_data = self._generate_row_data()
 		)
 		self.add_widget(self.table_widget)
 
 	def on_enter(self):
-		self.load_table()
+		self._load_table()
+
 
 
 class MainApp(MDApp):
 
+	@staticmethod
+	def load_dataset() -> pd.DataFrame:
+		'''Load all csv files in the data folder and combine dataframes'''
+		datafiles = glob.glob("data/*.csv")
+		dataframes = [pd.read_csv(file) for file in datafiles]
+		return dataframes[0]
+
+	def process_dataset(self):
+		pass
+
 	def build(self):
+		self.dataset = MainApp.load_dataset()
+		self.balance = self.dataset['Balance'].iloc[0]
+		self.balance_text = f"£{self.balance:.2f}"
+		self.expenses = self.dataset['Debit Amount'].sum()
+		self.expenses_text = f"£{self.expenses:.2f}"
+		self.income = self.dataset['Balance'].iloc[-1] - self.balance - self.expenses
+		self.income_text = f"£{self.income:.2f}"
 
-		from kivymd.uix.navigationrail import MDNavigationRail, MDNavigationRailItem
-
-		self.balance = dataset['Balance'][0]
-		self.balance_text = u"£" + f"{self.balance:.2f}"
 		self.theme_cls.theme_style = "Dark"
 
 		screen = Builder.load_file("layout.kv")

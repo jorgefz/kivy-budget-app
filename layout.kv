@@ -40,6 +40,7 @@ MDScreen:
 
 <HomeScreen>:
 	name: "Home"
+	
 	MDLabel:
 		text: "Balance"
 		pos_hint: {"center_y": 0.95, "center_x": 0.55}
@@ -51,19 +52,56 @@ MDScreen:
 		theme_text_color: "Primary"
 		font_style: "H3"
 
+	MDLabel:
+		text: "Income"
+		pos_hint: {"center_y": 0.75, "center_x": 0.55}
+		theme_text_color: "Primary"
+		font_style: "H4"
+	MDLabel:
+		text: app.income_text
+		pos_hint: {"center_y": 0.65, "center_x": 0.55}
+		theme_text_color: "Custom"
+		text_color: "#00FF00"
+		font_style: "H3"
+	
+	MDLabel:
+		text: "Expenses"
+		pos_hint: {"center_y": 0.55, "center_x": 0.55}
+		theme_text_color: "Primary"
+		font_style: "H4"
+	MDLabel:
+		text: app.expenses_text
+		pos_hint: {"center_y": 0.45, "center_x": 0.55}
+		theme_text_color: "Custom"
+		text_color: "#FF0000"
+		font_style: "H3"
+
 <GraphScreen>:
 	name: "Graphs"
 	MDLabel:
-		text: "Graphs"
-		pos_hint: {"center_y": 0.9}
+		text: "Balance over time"
+		pos_hint: {"center_y": 0.95}
 		halign: "center"
 		theme_text_color: "Primary"
 		font_style: "H4"
 	
-	MDBoxLayout:
-		id: expense_graph
+	ScatterGraph:
+		id: balance_graph
+		dataset: app.dataset.drop_duplicates(subset=['Transaction Date'], keep='last')[::-1]
+		xfield: 'Transaction Date'
+		yfield: 'Balance'
+		floating_labels: True
+
+	ScatterGraph:
+		id: balance_graph
+		dataset: app.dataset.drop_duplicates(subset=['Transaction Date'], keep='last')[::-1]
+		xfield: 'Transaction Date'
+		yfield: 'Balance'
+		floating_labels: True
 
 
 <DataTableScreen>:
 	name: "Data"
+	dataset: app.dataset
+	columns: ["Transaction Date", "Debit Amount", "Balance"]
 
