@@ -1,4 +1,6 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
+#:import KivyGraph kivy_garden.graph.Graph
+#:import calendar calendar
 
 MDScreen:
 
@@ -40,68 +42,120 @@ MDScreen:
 
 <HomeScreen>:
 	name: "Home"
-	
-	MDLabel:
-		text: "Balance"
-		pos_hint: {"center_y": 0.95, "center_x": 0.55}
-		theme_text_color: "Primary"
-		font_style: "H4"
-	MDLabel:
-		text: app.balance_text
-		pos_hint: {"center_y": 0.85, "center_x": 0.55}
-		theme_text_color: "Primary"
-		font_style: "H3"
+	datetime_label: datetime_label
 
 	MDLabel:
-		text: "Income"
-		pos_hint: {"center_y": 0.75, "center_x": 0.55}
+		id: datetime_label
+		text: root.date + "\n" + root.time
+		pos_hint: {"center_y": 0.90, "center_x": 0.55}
 		theme_text_color: "Primary"
 		font_style: "H4"
-	MDLabel:
-		text: app.income_text
-		pos_hint: {"center_y": 0.65, "center_x": 0.55}
-		theme_text_color: "Custom"
-		text_color: "#00FF00"
-		font_style: "H3"
 	
-	MDLabel:
-		text: "Expenses"
-		pos_hint: {"center_y": 0.55, "center_x": 0.55}
-		theme_text_color: "Primary"
-		font_style: "H4"
-	MDLabel:
-		text: app.expenses_text
-		pos_hint: {"center_y": 0.45, "center_x": 0.55}
-		theme_text_color: "Custom"
-		text_color: "#FF0000"
-		font_style: "H3"
+	MDFloatLayout:
+		pos_hint: {'center_x': 0.50, 'center_y': 0.6}
+		MDLabel:
+			text: "Balance"
+			pos_hint: {"center_y": 0.65, "center_x": 0.55}
+			theme_text_color: "Primary"
+			font_style: "H4"
+		MDLabel:
+			text: app.balance_text
+			pos_hint: {"center_y": 0.55, "center_x": 0.55}
+			theme_text_color: "Primary"
+			font_style: "H3"
+
+	MDFloatLayout:
+		pos_hint: {'center_x': 0.50, 'center_y': 0.4}
+		MDLabel:
+			text: "Income"
+			pos_hint: {"center_y": 0.65, "center_x": 0.55}
+			theme_text_color: "Primary"
+			font_style: "H4"
+		MDLabel:
+			text: app.income_text
+			pos_hint: {"center_y": 0.55, "center_x": 0.55}
+			theme_text_color: "Custom"
+			text_color: "#00FF00"
+			font_style: "H3"
+	
+	MDFloatLayout:
+		pos_hint: {'center_x': 0.50, 'center_y': 0.4}
+		MDLabel:
+			text: "Profit"
+			pos_hint: {"center_y": 0.65, "center_x": 0.85}
+			theme_text_color: "Primary"
+			font_style: "H4"
+		MDLabel:
+			text: app.profit_text
+			pos_hint: {"center_y": 0.55, "center_x": 0.85}
+			theme_text_color: "Custom"
+			text_color: "#FFFF00"
+			font_style: "H3"
+
+	MDFloatLayout:
+		pos_hint: {'center_x': 0.50, 'center_y': 0.4}
+		MDLabel:
+			text: "Expenses"
+			pos_hint: {"center_y": 0.65, "center_x": 1.15}
+			theme_text_color: "Primary"
+			font_style: "H4"
+		MDLabel:
+			text: app.expenses_text
+			pos_hint: {"center_y": 0.55, "center_x": 1.15}
+			theme_text_color: "Custom"
+			text_color: "#FF0000"
+			font_style: "H3"
 
 <GraphScreen>:
 	name: "Graphs"
+	dataset: app.dataset
+	each_day: app.each_day
+
 	MDLabel:
 		text: "Balance over time"
 		pos_hint: {"center_y": 0.95}
 		halign: "center"
 		theme_text_color: "Primary"
 		font_style: "H4"
+
+	MDRaisedButton:
+		id: month_selection
+		size: (150, 20)
+		size_hint: (None,None)
+		pos_hint: {'center_y': 0.8, 'center_x': 0.1}
+		text: "All Year"
+		font_size: 18
+		on_release: root.month_dropdown.open()
+
+	MDRaisedButton:
+		id: year_selection
+		size: (150, 20)
+		size_hint: (None,None)
+		pos_hint: {'center_y': 0.6, 'center_x': 0.1}
+		text: "2022"
+		font_size: 18
+		on_release: root.year_dropdown.open()
+
+	MDLabel:
+		id: xlabel
+		pos_hint: {'center_y': 0.08, 'center_x': 1.1}
+		text: month_selection.text
+		font_size: 20
+
+	# ScatterGraph:
+	# 	id: balance_graph
+	# 	# on_parent: self.update()
+	# 	size: (700,500)
+	# 	size_hint: (None,None)
+	# 	pos_hint: {'center_x': 0.6, 'center_y': 0.5}
+	# 	dataset: app.each_day
+	# 	xfield: 'date'
+	# 	yfield: 'balance'
+	# 	floating_labels: True
 	
-	ScatterGraph:
-		id: balance_graph
-		dataset: app.dataset.drop_duplicates(subset=['Transaction Date'], keep='last')[::-1]
-		xfield: 'Transaction Date'
-		yfield: 'Balance'
-		floating_labels: True
-
-	ScatterGraph:
-		id: balance_graph
-		dataset: app.dataset.drop_duplicates(subset=['Transaction Date'], keep='last')[::-1]
-		xfield: 'Transaction Date'
-		yfield: 'Balance'
-		floating_labels: True
-
 
 <DataTableScreen>:
 	name: "Data"
 	dataset: app.dataset
-	columns: ["Transaction Date", "Debit Amount", "Balance"]
+	columns: ["date", "amount", "balance"]
 

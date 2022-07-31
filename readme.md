@@ -16,4 +16,4 @@ that tracks your spending.
 
 ## Provide the Data
 
-Go to the online banking portal of your bank and download the CSV file of your transactions. Rename it to "finances.csv" and place it within the "data" folder.
+Go to the online banking portal of your bank, download the CSV file of your transactions, and place it within the "data" folder.
