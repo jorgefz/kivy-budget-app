@@ -14,7 +14,13 @@ This application was tested using github.com/kivymd/KivyMD commit f995f8e
 
 ## Running the App
 
+Run the app with the following command:
 `python app.py`
+
+This app works best with mobile screen sizes.
+As an example, using the screen of a Samsung Galaxy S6:
+
+`python app.py -m screen:phone_samsung_galaxy_s6,portrait,scale=0.25`
 
 ## Provide the Data
 
