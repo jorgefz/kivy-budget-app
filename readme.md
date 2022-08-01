@@ -3,10 +3,12 @@
 This is a small desktop application written in Python 3 and KivyMD
 that tracks your spending.
 
+This application was tested using github.com/kivymd/KivyMD commit f995f8e
+
 ## Install Guide
 
 `pip install pandas matplotlib`
-`pip install kivy`
+`pip install https://github.com/kivymd/KivyMD/archive/f995f8e.zip`
 `pip install kivy-garden`
 `garden install matplotlib`
 

@@ -3,11 +3,13 @@ from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager
 from kivy.lang import Builder
 
+from kivymd.uix.toolbar import MDTopAppBar
+
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 
 from kivy.core.window import Window
-Window.size = (900, 600)
+#Window.size = (1000, 600)
 
 from graphscreen import GraphScreen
 import glob
@@ -33,26 +35,14 @@ class HomeScreen(MDScreen):
 
 	datetime_label = ObjectProperty(None)
 	
-	def setup_donut_plot(self):
-		donut = DonutPlot(
-			size=(400,400),
-			size_hint=(None,None),
-			pos_hint = {'center_y': 0.8, 'center_x': 0.8},
-		)
-		self.add_widget(donut)
-		donut.set_theme('dark')
-		donut.plot(0.8, limits=[0,1], text=f"{80}%", fontsize=25, color="b", textcolor="w")
-
 	def on_pre_enter(self):
 		
-		self.setup_donut_plot()
-
 		now = dt.datetime.now()
 		weekday = calendar.day_name[now.weekday()]
 		self.date = f"{weekday}, " + now.strftime("%d %B %Y")
 		self.time = str(now.strftime("%H:%M:%S"))
 		if self.datetime_label:
-			self.datetime_label.text = self.date + '\n' + self.time
+			self.datetime_label.text = self.date
 
 
 class DataTableScreen(MDScreen):
@@ -71,15 +61,15 @@ class DataTableScreen(MDScreen):
 
 	def load_table(self):
 		self.table_widget = MDDataTable(
-			size_hint= (0.7, 0.8),
-			pos_hint= {"center_x": 0.5, "center_y": 0.5},
+			size_hint= (0.9, 0.8),
+			pos_hint= {"center_x": 0.5, "center_y": 0.55},
 			use_pagination = True,
 			rows_num = 7,
 			column_data = [
-				("Date", dp(30)),
-				("Amount", dp(30)),
-				("Balance", dp(30)) ],
-			row_data = self.generate_row_data()
+				("Date",    dp(21)),
+				("Amount",  dp(18)),
+				("Balance", dp(18)) ],
+			row_data = self.generate_row_data(),
 		)
 		self.add_widget(self.table_widget)
 

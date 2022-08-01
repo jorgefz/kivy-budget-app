@@ -100,7 +100,6 @@ class PlotWidget(MDBoxLayout):
 		super().__init__(*args, **kwargs)
 
 		self.fig, self.ax = plt.subplots(1,1, subplot_kw = subplot_kw)
-		self.plot_widget = FigureCanvasKivyAgg(figure = self.fig)
 		self.show()
 
 		# Fit plot to box layout
@@ -149,7 +148,7 @@ class PlotWidget(MDBoxLayout):
 		
 
 	def show(self):
-		'''Allows plot to be displayed as a widget'''
+		'''Creates a widget from the plot data'''
 		self.clear_widgets()
 		self.plot_widget = FigureCanvasKivyAgg(figure = self.fig)
 		self.add_widget(self.plot_widget)
@@ -168,7 +167,8 @@ class PlotWidget(MDBoxLayout):
 		elif theme == 'light':
 			color = "black"
 			axcolor = "white"
-		else: return
+		else:
+			raise ValueError("theme can only be 'dark' or 'light'")
 
 		self.ax.set_facecolor(axcolor) # Graph area
 		self.ax.tick_params(axis='x', colors=color, labelsize=12)
@@ -188,10 +188,23 @@ class PlotWidget(MDBoxLayout):
 			raise ValueError("axis must be 'x' or 'y'")
 
 
+
 class DonutPlot(PlotWidget):
-	
+	'''
+	Produces a 'donut' plot, a 1D plot in the form of a hollow circle
+	that represents a value bouded by a minimum (empty circle)
+	and a maximum (full circle).
+
+	Parameters
+	----------
+		*args, **kwargs		Parameters for PlotWidget*
+
+		The only exception is the parameter subplot_kw['projection']
+		for plt.subplots(), which is set to 'polar'.
+	'''
+
 	def __init__(self, *args, **kwargs):
-		if not 'subplot_kw' in kwargs: kwargs['subplot_kw'] = dict()
+		kwargs.setdefault('subplot_kw', dict())
 		kwargs['subplot_kw']['projection'] = 'polar'
 		super().__init__(*args, **kwargs)
 

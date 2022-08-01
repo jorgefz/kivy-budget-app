@@ -4,35 +4,33 @@
 
 MDScreen:
 
-	MDBoxLayout:
-		orientation: 'horizontal'
+	MDRelativeLayout:
 
-		MDNavigationRail:
+		MDBottomNavigation:
 			id: rail
-			hover_bg: (0.0, 0.0, 0.0, 0.2)
-			use_hover_behavior: True
-			anchor: "center"
-			color_active: get_color_from_hex("#f3ab44")
 
-			MDNavigationRailItem:
+			MDBottomNavigationItem:
 				icon: "home"
-				on_release: screen_manager.current = 'Home'
+				text: 'Overview'
+				on_tab_release: screen_manager.current = 'Home'
 
-			MDNavigationRailItem:
+			MDBottomNavigationItem:
 				icon: "chart-line"
-				on_release: screen_manager.current = 'Graphs'
+				text: 'Graphs'
+				on_tab_release: screen_manager.current = 'Graphs'
 			
-			MDNavigationRailItem:
+			MDBottomNavigationItem:
 				icon: "database"
-				on_release: screen_manager.current = 'Data'
+				text: 'Data'
+				on_tab_release: screen_manager.current = 'Data'
 
 		MDBoxLayout:
 			orientation: 'vertical'
 		
-			MDToolbar:
-				title: "Budget App"
-				pos_hint: {"top": 1}
-				height: "30dp"
+			# MDTopAppBar:
+			# 	title: "Budget App"
+			# 	pos_hint: {"top": 1}
+			# 	size_hint_y: dp(0.06)
 			
 			ScreenManager:
 				id: screen_manager
@@ -46,70 +44,107 @@ MDScreen:
 
 	MDLabel:
 		id: datetime_label
-		text: root.date + "\n" + root.time
-		pos_hint: {"center_y": 0.90, "center_x": 0.55}
+		text: root.date
+		pos_hint: {"center_x": 0.55,"center_y": 0.92}
 		theme_text_color: "Primary"
-		font_style: "H4"
+		font_style: "H2"
+		font_size: 30
 	
-	MDFloatLayout:
-		pos_hint: {'center_x': 0.50, 'center_y': 0.6}
+	MDRelativeLayout:
+		pos_hint: {'center_x': 0.5, 'center_y': 0.75}
 		MDLabel:
 			text: "Balance"
-			pos_hint: {"center_y": 0.65, "center_x": 0.55}
+			pos_hint: {"center_y": 0.57}
+			halign:'center'
 			theme_text_color: "Primary"
-			font_style: "H4"
+			font_style: "H3"
+			font_size: 26
 		MDLabel:
 			text: app.balance_text
-			pos_hint: {"center_y": 0.55, "center_x": 0.55}
+			pos_hint: {"center_y": 0.5}
+			halign:'center'
 			theme_text_color: "Primary"
-			font_style: "H3"
+			font_style: "H2"
+			font_size: 45
 
-	MDFloatLayout:
-		pos_hint: {'center_x': 0.50, 'center_y': 0.4}
+	MDRelativeLayout:
+		pos_hint: {'center_x': 0.25, 'center_y': 0.55}
 		MDLabel:
 			text: "Income"
-			pos_hint: {"center_y": 0.65, "center_x": 0.55}
+			pos_hint: {"center_y": 0.57}
+			halign:'center'
 			theme_text_color: "Primary"
-			font_style: "H4"
+			font_style: "H3"
+			font_size: 26
 		MDLabel:
 			text: app.income_text
-			pos_hint: {"center_y": 0.55, "center_x": 0.55}
+			pos_hint: {"center_y": 0.5}
+			halign:'center'
 			theme_text_color: "Custom"
 			text_color: "#00FF00"
-			font_style: "H3"
-	
-	MDFloatLayout:
-		pos_hint: {'center_x': 0.50, 'center_y': 0.4}
-		MDLabel:
-			text: "Profit"
-			pos_hint: {"center_y": 0.65, "center_x": 0.85}
-			theme_text_color: "Primary"
-			font_style: "H4"
-		MDLabel:
-			text: app.profit_text
-			pos_hint: {"center_y": 0.55, "center_x": 0.85}
-			theme_text_color: "Custom"
-			text_color: "#FFFF00"
-			font_style: "H3"
+			font_style: "H2"
+			font_size: 38
 
-	MDFloatLayout:
-		pos_hint: {'center_x': 0.50, 'center_y': 0.4}
+	MDRelativeLayout:
+		pos_hint: {'center_x': 0.75, 'center_y': 0.55}
 		MDLabel:
 			text: "Expenses"
-			pos_hint: {"center_y": 0.65, "center_x": 1.15}
+			halign: "center"
+			pos_hint: {"center_y": 0.57, "center_x": 0.5}
 			theme_text_color: "Primary"
-			font_style: "H4"
+			font_style: "H3"
+			font_size: 26
 		MDLabel:
 			text: app.expenses_text
-			pos_hint: {"center_y": 0.55, "center_x": 1.15}
+			pos_hint: {"center_y": 0.5, "center_x": 0.5}
+			halign: "center"
 			theme_text_color: "Custom"
 			text_color: "#FF0000"
+			font_style: "H2"
+			font_size: 38
+	
+	MDRelativeLayout:
+		pos_hint: {'center_x': 0.25, 'center_y': 0.3}
+		MDLabel:
+			text: "Profit"
+			pos_hint: {"center_y": 0.55}
+			halign:'center'
+			theme_text_color: "Primary"
 			font_style: "H3"
+			font_size: 26
+		MDLabel:
+			text: app.profit_text
+			pos_hint: {"center_y": 0.48}
+			halign:'center'
+			theme_text_color: "Custom"
+			text_color: "#FFA500"
+			font_style: "H2"
+			font_size: 38
+
+	DonutPlot:
+		id: profit_donut
+		pos_hint: {'center_x': 0.75, 'center_y': 0.3}
+		adaptive_size: True
+		size_hint: 0.8,0.8
+		on_parent:
+			self.set_theme('dark')
+			self.clear()
+			pct = 100.0 * (1.0 - app.profit / app.income)
+			self.plot(0.8, limits=[0,1], text=f"{int(pct)}%",fontsize=28, color="orange", textcolor="w")
+			self.show()
 
 <GraphScreen>:
 	name: "Graphs"
 	dataset: app.dataset
 	each_day: app.each_day
+
+	PlotWidget:
+		id: balance_plot
+		# size: (700,500)
+		# size_hint: (None,None)
+		pos_hint:  {'center_x': 0.55, 'center_y': 0.7}
+		adaptive_size: True
+		size_hint: (1.1,0.5)
 
 	MDLabel:
 		text: "Balance over time"
@@ -120,18 +155,18 @@ MDScreen:
 
 	MDRaisedButton:
 		id: month_selection
-		size: (150, 20)
-		size_hint: (None,None)
-		pos_hint: {'center_y': 0.6, 'center_x': 0.1}
+		size_hint: None, None
+        width: dp(100) + (self.ids.lbl_txt.texture_size[0] - self.ids.lbl_txt.texture_size[0])
+		pos_hint: {'center_y': 0.35, 'center_x': 0.3}
 		text: "All Year"
 		font_size: 18
 		on_release: root.month_dropdown.open()
 
 	MDRaisedButton:
 		id: year_selection
-		size: (150, 20)
-		size_hint: (None,None)
-		pos_hint: {'center_y': 0.7, 'center_x': 0.1}
+		size_hint: None, None
+        width: dp(100) + (self.ids.lbl_txt.texture_size[0] - self.ids.lbl_txt.texture_size[0])
+		pos_hint: {'center_y': 0.35, 'center_x': 0.7}
 		text: "2022"
 		font_size: 18
 		on_release: root.year_dropdown.open()

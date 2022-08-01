@@ -78,21 +78,28 @@ class GraphScreen(MDScreen):
 		)
 	
 	def on_month_select(self, text):
-		print(text)
 		self.balance_plot.clear()
+
+		# Display the data for one full year
 		if (text == "All Year"):
-			x = self.each_day['date']
-			y = self.each_day['balance']
-			# self.balance_plot.ax.set_xticklabels(calendar.month_abbr)
 			x = [ dt.datetime.strptime(d, "%d/%m/%Y")
-				for d in self.each_day['date']]
-			self.balance_plot.ax.xaxis.set_major_locator(mdates.MonthLocator(bymonthday=15))
-			self.balance_plot.ax.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
+				  for d in self.each_day['date']]
+			y = list(self.each_day['balance'])
+
+			# format the time axis using month abbreviations on each 15th day.
+			self.balance_plot.ax.xaxis.set_major_locator(
+				mdates.MonthLocator(bymonthday=15))
+			self.balance_plot.ax.xaxis.set_major_formatter(
+				mdates.DateFormatter('%b'))
 			label_fmt = lambda x,y: f"{x.strftime('%b %d')}\n£{y:.2f}"
+		
+		# Display the data for a single month
 		else:
-			x = self.each_day['day'][self.each_day['month'] == text]
-			y = self.each_day['balance'][self.each_day['month'] == text]
-			xticks = [1, 7, 14, 21, 28]
+			idx = self.each_day['month'] == text
+			x = self.each_day['day'][idx]
+			y = self.each_day['balance'][idx]
+			# Choose roughly the days at the beginning of each week plus the last one
+			xticks = [1, 7, 14, 21, 29]
 			self.balance_plot.ax.set_xticks(xticks)
 			label_fmt = lambda x,y: f"{text} {x:0d}\n£{y:.2f}"
 
@@ -119,33 +126,30 @@ class GraphScreen(MDScreen):
 		)
 
 	def on_year_select(self, text):
-		print(text)
+		self.balance_plot.clear()
+
 		if (text == "All"):
 			x = self.each_day['date']
 			y = self.each_day['balance']
 		else:
-			x = self.each_day['date'][self.each_day['year'] == text]
-			y = self.each_day['balance'][self.each_day['year'] == text]
+			idx = self.each_day['year'] == int(text)
+			x = self.each_day['date'][idx]
+			y = self.each_day['balance'][idx]
 		
-		self.balance_plot.clear()
-		self.balance_plot.plot(x, y, c='b')
+		self.balance_plot.plot(x, y, c='cyan', marker='o', ms=8, mec='k', lw=3)
 		self.balance_plot.ax.set_xlabel(text, fontsize=15, c="white")
+		self.balance_plot.ax.grid(visible=True, axis='y', c='white', alpha=0.5)
 		self.balance_plot.ax.set_xticks([1, 7, 14, 21, 28])
 		self.balance_plot.show()
 
-	def on_enter(self):
-		self.balance_plot = PlotWidget(
-			size = (700,500),
-			size_hint = (None,None),
-			pos_hint  = {'center_x': 0.6, 'center_y': 0.5}
-		)
-		self.add_widget(self.balance_plot)
+	def on_pre_enter(self):
+		self.balance_plot = self.ids.balance_plot
 		self.balance_plot.set_theme('dark')
 
 		self.setup_month_menu()
 		self.setup_year_menu()
 
-		# setup initial option
+		# set initial plot option
 		self.on_month_select("All Year")
 
 
