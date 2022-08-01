@@ -7,13 +7,70 @@ from kivy.properties import *
 
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
+from typing import List, Tuple, Union
+
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 import matplotlib.dates as mdates
 import matplotlib as mpl
 mpl.use("module://kivy.garden.matplotlib.backend_kivy")
+
+
+class PlotDataLabels():
+	''' Renders hovering annotations over a data point in a plot'''
+
+	@staticmethod
+	def hover_callback(event, fig, ax, labelbox, lines, xdata, ydata, fmt):
+		''' Callback for mouse hovering over a plot '''
+		visible = labelbox.get_visible()
+
+		if event.inaxes != ax:
+			return
+
+		# pandas objects are indexed with extra variable iloc[]
+		x_is_pd = isinstance(xdata, (pd.DataFrame,pd.Series))
+		y_is_pd = isinstance(ydata, (pd.DataFrame,pd.Series))
+
+		contained, index = lines.contains(event)
+		if contained:
+			ind = index['ind'][0]
+			x,y = lines.get_data()
+			xp = xdata.iloc[ind] if x_is_pd else xdata[ind]
+			yp = ydata.iloc[ind] if y_is_pd else ydata[ind]
+			labelbox.xy = (x[ind], y[ind])
+			labelbox.set_text(fmt(xp,yp))
+			labelbox.set_visible(True)
+			fig.canvas.draw_idle()
+		elif visible:
+			labelbox.set_visible(False)
+			fig.canvas.draw_idle()
+
+
+	@staticmethod
+	def show(fig, axs, lines, xdata, ydata, **kwargs):
+		''' Enables hovering annotations over pointed data point '''
+		# custom keyword - does not belong to axis.annotate
+		fmt = kwargs.pop('fmt')
+		# Overwrite text and xy
+		kwargs['text'] = '',	
+		kwargs['xy']   = (0,0),
+		# Defaults for the others
+		kwargs.setdefault('textcoords', 'offset points')
+		kwargs.setdefault('xytext',     (15,15))
+		kwargs.setdefault('bbox',       {'boxstyle':'round', 'fc':'white', 'alpha':0.5})
+		kwargs.setdefault('arrowprops', {'arrowstyle':'-|>', 'color':'white'})
+		kwargs.setdefault('fontsize', 12)
+
+		labelbox = axs.annotate(**kwargs)
+		labelbox.set_visible(False)
+
+		callback = lambda event: PlotDataLabels.hover_callback(
+			event, fig, axs, labelbox, lines, xdata, ydata, fmt)
+		fig.canvas.mpl_connect('motion_notify_event', callback)
+
 
 
 class PlotWidget(MDBoxLayout):
@@ -54,8 +111,42 @@ class PlotWidget(MDBoxLayout):
 
 		
 	def plot(self, *args, **kwargs):
-		''' Produces figure canvas widget, allows replotting '''
-		self.ax.plot(*args, **kwargs)
+		'''
+		Produces figure canvas widget, allows replotting.
+		Pass the same arguments as to plt.plot()
+		See 'https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html'
+
+		Extra arguments:
+			hover_labels:	dict, optional
+							Displays an annotation with info on one data point
+							when the mouse hovers over a data point in the plot.
+							If left undefined, the annotations will not be show.
+							If provided with an empty dict, the annotations will
+							be shown using default parameters.
+							*See below for a list of accepted parameters
+							for hover_labels.
+
+		*Parameters for hover_labels:
+			fmt:			callable, optional
+							Function that receives the x,y values of a data point
+							and returns a formatted string.
+							By default, it is set to `lambda x,y: f"{x}\n{y}"`.
+			Additional arguments sent to Axis.annotate,
+			except 'text' and 'xy', which will be overwritten.
+		'''
+
+		hover_labels = kwargs.pop("hover_labels", None)
+		line_info = self.ax.plot(*args, **kwargs)
+
+		if not isinstance(hover_labels, dict):
+			return line_info
+
+		line = line_info[0]
+		hover_labels.setdefault("fmt", lambda x,y: f"{x}\n{y}")
+		x = line._xorig
+		y = line._yorig
+		PlotDataLabels.show(self.fig, self.ax, line, x, y, **hover_labels)
+		
 
 	def show(self):
 		'''Allows plot to be displayed as a widget'''
@@ -88,8 +179,14 @@ class PlotWidget(MDBoxLayout):
 		for key in self.ax.spines:
 			self.ax.spines[key].set_color(color)
 
+	def format_axis(self, formatter: callable, axis: str):
+		if axis.lower() == 'x':
+			self.ax.xaxis.set_major_formatter(formatter)
+		elif axis.lower() == 'y':
+			self.ax.yaxis.set_major_formatter(formatter)
+		else:
+			raise ValueError("axis must be 'x' or 'y'")
 
-from typing import List, Tuple, Union
 
 class DonutPlot(PlotWidget):
 	
@@ -120,140 +217,5 @@ class DonutPlot(PlotWidget):
 		# Round ends, find a way to adjust size to match the circle width
 		# ax.scatter(x+left, y, s=40, color=self.color, zorder=2)
 		# ax.scatter(left, y,   s=40, color=self.color, zorder=2)
-
-
-		
-class GraphDataLabel():
-	''' Renders hovering annotations over a data point in a plot'''
-
-	@staticmethod
-	def hover_callback(event, labelbox, lines, xdata, ydata):
-		''' Callback for mouse hovering over a plot '''
-		fig = plt.gcf()
-		visible = labelbox.get_visible()
-
-		if event.inaxes != plt.gca():
-			return
-		
-		contained, index = lines.contains(event)
-		if contained:
-			ind = index['ind'][0]
-			xp = xdata.iloc[ind]
-			yp = ydata.iloc[ind]
-			x,y = lines.get_data()
-			labelbox.xy = (x[ind], y[ind])
-			labelbox.set_text(f"{xp}\n{yp}")
-			labelbox.set_visible(True)
-			fig.canvas.draw_idle()
-		elif visible:
-			labelbox.set_visible(False)
-			fig.canvas.draw_idle()
-
-
-	@staticmethod
-	def show(xdata, ydata, lines):
-		''' Enables hovering annotations over pointed data point '''
-		fig = plt.gcf()
-		axs = plt.gca()
-		labelbox = axs.annotate(
-			text='',
-			xy=(0,0),
-			xytext=(15,15),
-			textcoords='offset points',
-			bbox={'boxstyle':'round', 'fc':'white', 'alpha':1.0},
-			arrowprops={'arrowstyle':'-|>', 'color':'white'}
-		)
-		labelbox.set_visible(False)
-
-		callback = lambda event: GraphDataLabel.hover_callback(
-			event, labelbox, lines, xdata, ydata)
-		fig.canvas.mpl_connect('motion_notify_event', callback)
-
-
-
-class Graph(MDBoxLayout):
-	'''Skeleton Graph class. Allows displaying Matplotlib plots.'''
-	
-	dataset = ObjectProperty(None)
-	'''Pandas dataframe that holds financial data'''
-
-	def clear(self):
-		'''Clears previous plots and all child widgets'''
-		plt.clf() # clear plot
-		self.clear_widgets()
-
-	def show(self):
-		'''Draws the plot'''
-		self.add_widget(FigureCanvasKivyAgg(figure=plt.gcf()))
-
-	def update(self, dataset = None):
-		if dataset is not None: self.dataset = dataset
-		self.clear()
-		self.show()
-
-
-class ScatterGraph(Graph):
-	'''Renders a scatter plot'''
-
-	xfield = StringProperty("")
-	'''Dataframe field reference for the x-axis data'''
-	yfield = StringProperty("")
-	'''Dataframe field reference for the y-axis data'''
-	floating_labels = BooleanProperty(False)
-	'''Displays data point info when mouse hovers over it'''
-
-	# plot_options = DictProperty({})
-	''' Keyword arguments for pyplot.plot '''
-
-	def style_plot(self, lines):
-		fig = plt.gcf()
-		axs = fig.axes
-
-		# transparent background outside graph area
-		fig.patch.set_alpha(0.0)
-
-		for ax in axs:
-			 # transparent graph area
-			ax.set_facecolor("#FFFFFF00")
-			
-			ax.tick_params(axis='x', colors='white', labelsize=12)
-			ax.tick_params(axis='y', colors='white', labelsize=12)
-			
-			# make graph edges visible in dark mode
-			for key in ax.spines:
-				ax.spines[key].set_color("white")
-
-			# Format axis ticks
-			yfmt = lambda y, pos: f"£{y:.0f}"
-			ax.yaxis.set_major_formatter(mpl.ticker.FuncFormatter(yfmt))
-
-			ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
-			ax.format_xdata = mdates.DateFormatter('%d')
-
-
-	def update(self, xfield=None, yfield=None):
-		self.clear()
-
-		if(self.dataset is None):
-			self.add_widget(MDLabel(
-				text = "No data to display",
-				halign = "center",
-				font_style = "H5"
-			))
-			return
-
-		if xfield is None: xfield = self.xfield
-		if yfield is None: yfield = self.yfield
-		
-		x = self.dataset[self.xfield]
-		y = self.dataset[self.yfield]
-
-		lines, = plt.plot(x, y, marker = "s", ms = 10, mfc = 'b', mec = 'b')
-		self.style_plot(lines)
-
-		if self.floating_labels is True:
-			GraphDataLabel.show(x, y, lines)
-		
-		self.show()
 
 

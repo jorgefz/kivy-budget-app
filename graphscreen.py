@@ -28,9 +28,8 @@ from kivymd.uix.menu import MDDropdownMenu
 from graph import *
 
 from functools import partial
-
 import calendar
-
+import datetime as dt
 
 
 class MonthDropdown(MDDropdownMenu):
@@ -77,19 +76,30 @@ class GraphScreen(MDScreen):
 			items = month_items,
 			width_mult = 2,
 		)
-
 	
 	def on_month_select(self, text):
 		print(text)
+		self.balance_plot.clear()
 		if (text == "All Year"):
 			x = self.each_day['date']
 			y = self.each_day['balance']
+			# self.balance_plot.ax.set_xticklabels(calendar.month_abbr)
+			x = [ dt.datetime.strptime(d, "%d/%m/%Y")
+				for d in self.each_day['date']]
+			self.balance_plot.ax.xaxis.set_major_locator(mdates.MonthLocator(bymonthday=15))
+			self.balance_plot.ax.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
+			label_fmt = lambda x,y: f"{x.strftime('%b %d')}\n£{y:.2f}"
 		else:
 			x = self.each_day['day'][self.each_day['month'] == text]
 			y = self.each_day['balance'][self.each_day['month'] == text]
-		
-		self.balance_plot.clear()
-		self.balance_plot.plot(x, y, c='b')
+			xticks = [1, 7, 14, 21, 28]
+			self.balance_plot.ax.set_xticks(xticks)
+			label_fmt = lambda x,y: f"{text} {x:0d}\n£{y:.2f}"
+
+		self.balance_plot.plot(x, y, c='cyan', marker='o', ms=8, mec='k', lw=3,
+			hover_labels = dict(fmt = label_fmt))
+		self.balance_plot.ax.set_xlabel(text, fontsize=15, c="white")
+		self.balance_plot.ax.grid(visible=True, axis='y', c='white', alpha=0.5)
 		self.balance_plot.show()
 
 	def setup_year_menu(self):
@@ -119,6 +129,8 @@ class GraphScreen(MDScreen):
 		
 		self.balance_plot.clear()
 		self.balance_plot.plot(x, y, c='b')
+		self.balance_plot.ax.set_xlabel(text, fontsize=15, c="white")
+		self.balance_plot.ax.set_xticks([1, 7, 14, 21, 28])
 		self.balance_plot.show()
 
 	def on_enter(self):
@@ -130,10 +142,11 @@ class GraphScreen(MDScreen):
 		self.add_widget(self.balance_plot)
 		self.balance_plot.set_theme('dark')
 
-		self.balance_plot.plot([1,2,3])
-		
 		self.setup_month_menu()
 		self.setup_year_menu()
+
+		# setup initial option
+		self.on_month_select("All Year")
 
 
 

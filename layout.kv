@@ -122,7 +122,7 @@ MDScreen:
 		id: month_selection
 		size: (150, 20)
 		size_hint: (None,None)
-		pos_hint: {'center_y': 0.8, 'center_x': 0.1}
+		pos_hint: {'center_y': 0.6, 'center_x': 0.1}
 		text: "All Year"
 		font_size: 18
 		on_release: root.month_dropdown.open()
@@ -131,27 +131,10 @@ MDScreen:
 		id: year_selection
 		size: (150, 20)
 		size_hint: (None,None)
-		pos_hint: {'center_y': 0.6, 'center_x': 0.1}
+		pos_hint: {'center_y': 0.7, 'center_x': 0.1}
 		text: "2022"
 		font_size: 18
 		on_release: root.year_dropdown.open()
-
-	MDLabel:
-		id: xlabel
-		pos_hint: {'center_y': 0.08, 'center_x': 1.1}
-		text: month_selection.text
-		font_size: 20
-
-	# ScatterGraph:
-	# 	id: balance_graph
-	# 	# on_parent: self.update()
-	# 	size: (700,500)
-	# 	size_hint: (None,None)
-	# 	pos_hint: {'center_x': 0.6, 'center_y': 0.5}
-	# 	dataset: app.each_day
-	# 	xfield: 'date'
-	# 	yfield: 'balance'
-	# 	floating_labels: True
 	
 
 <DataTableScreen>:
