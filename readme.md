@@ -25,3 +25,12 @@ As an example, using the screen of a Samsung Galaxy S6:
 ## Provide the Data
 
 Go to the online banking portal of your bank, download the CSV file of your transactions, and place it within the "data" folder.
+
+## To-Do
+
+- Set homescreen metrics to display data only for current month
+- Find and choose metrics to display
+- Design best method of presenting the metrics
+- Functionality to import csv files
+- Add input csv files into a principal SQL database
+- Solve conflicts between new and existing data for overlaping timestamps

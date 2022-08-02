@@ -1,5 +1,4 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
-#:import KivyGraph kivy_garden.graph.Graph
 #:import calendar calendar
 
 MDScreen:
@@ -45,27 +44,28 @@ MDScreen:
 	MDLabel:
 		id: datetime_label
 		text: root.date
-		pos_hint: {"center_x": 0.55,"center_y": 0.92}
+		pos_hint: {"center_y": 0.94}
+		halign: 'center'
 		theme_text_color: "Primary"
 		font_style: "H2"
-		font_size: 30
+		font_size: self.width * 0.08
 	
 	MDRelativeLayout:
 		pos_hint: {'center_x': 0.5, 'center_y': 0.75}
 		MDLabel:
 			text: "Balance"
-			pos_hint: {"center_y": 0.57}
+			pos_hint: {"center_y": 0.58}
 			halign:'center'
 			theme_text_color: "Primary"
 			font_style: "H3"
-			font_size: 26
+			font_size: self.width * 0.10
 		MDLabel:
 			text: app.balance_text
 			pos_hint: {"center_y": 0.5}
 			halign:'center'
 			theme_text_color: "Primary"
 			font_style: "H2"
-			font_size: 45
+			font_size: self.width * 0.12
 
 	MDRelativeLayout:
 		pos_hint: {'center_x': 0.25, 'center_y': 0.55}
@@ -75,7 +75,7 @@ MDScreen:
 			halign:'center'
 			theme_text_color: "Primary"
 			font_style: "H3"
-			font_size: 26
+			font_size: self.width * 0.08
 		MDLabel:
 			text: app.income_text
 			pos_hint: {"center_y": 0.5}
@@ -83,7 +83,7 @@ MDScreen:
 			theme_text_color: "Custom"
 			text_color: "#00FF00"
 			font_style: "H2"
-			font_size: 38
+			font_size: self.width * 0.10
 
 	MDRelativeLayout:
 		pos_hint: {'center_x': 0.75, 'center_y': 0.55}
@@ -93,7 +93,7 @@ MDScreen:
 			pos_hint: {"center_y": 0.57, "center_x": 0.5}
 			theme_text_color: "Primary"
 			font_style: "H3"
-			font_size: 26
+			font_size: self.width * 0.08
 		MDLabel:
 			text: app.expenses_text
 			pos_hint: {"center_y": 0.5, "center_x": 0.5}
@@ -101,7 +101,7 @@ MDScreen:
 			theme_text_color: "Custom"
 			text_color: "#FF0000"
 			font_style: "H2"
-			font_size: 38
+			font_size: self.width * 0.10
 	
 	MDRelativeLayout:
 		pos_hint: {'center_x': 0.25, 'center_y': 0.3}
@@ -111,7 +111,7 @@ MDScreen:
 			halign:'center'
 			theme_text_color: "Primary"
 			font_style: "H3"
-			font_size: 26
+			font_size: self.width * 0.08
 		MDLabel:
 			text: app.profit_text
 			pos_hint: {"center_y": 0.48}
@@ -119,7 +119,7 @@ MDScreen:
 			theme_text_color: "Custom"
 			text_color: "#FFA500"
 			font_style: "H2"
-			font_size: 38
+			font_size: self.width * 0.10
 
 	DonutPlot:
 		id: profit_donut
@@ -130,7 +130,8 @@ MDScreen:
 			self.set_theme('dark')
 			self.clear()
 			pct = 100.0 * (1.0 - app.profit / app.income)
-			self.plot(0.8, limits=[0,1], text=f"{int(pct)}%",fontsize=28, color="orange", textcolor="w")
+			self.plot(pct, limits = [0,100], text = f"{int(pct)}%", \
+			fontsize = self.width*0.3, color = "orange", textcolor = "w")
 			self.show()
 
 <GraphScreen>:

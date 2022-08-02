@@ -6,7 +6,7 @@ from kivy.lang import Builder
 from kivymd.uix.toolbar import MDTopAppBar
 
 from kivymd.uix.datatables import MDDataTable
-from kivy.metrics import dp
+from kivy.metrics import dp, sp
 
 from kivy.core.window import Window
 #Window.size = (1000, 600)
@@ -135,9 +135,19 @@ class MainApp(MDApp):
 
 		self.each_day = self.dataset.drop_duplicates(subset=['date'], keep='last')[::-1]
 
-		self.balance = self.dataset['balance'].iloc[0]
-		self.expenses = self.dataset['expense'].sum()
-		self.income = self.dataset['income'].sum()
+		self.this_year = dt.datetime.now().year
+		last_month_num = dt.datetime.now().month - 1
+		if last_month_num == 0:
+			last_month_num = 12
+			self.this_year -= 1
+		self.last_month = calendar.month_name[last_month_num]
+		self.this_year = str(self.this_year)
+
+		time_idx = self.dataset['month'] == self.last_month
+		
+		self.balance = self.dataset['balance'][time_idx].iloc[0]
+		self.expenses = self.dataset[time_idx]['expense'].sum()
+		self.income = self.dataset[time_idx]['income'].sum()
 		self.profit = self.income - self.expenses
 
 		self.balance_text = MainApp.sterling(self.balance)

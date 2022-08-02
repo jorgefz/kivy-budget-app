@@ -101,10 +101,10 @@ class GraphScreen(MDScreen):
 			# Choose roughly the days at the beginning of each week plus the last one
 			xticks = [1, 7, 14, 21, 29]
 			self.balance_plot.ax.set_xticks(xticks)
-			label_fmt = lambda x,y: f"{text} {x:0d}\n£{y:.2f}"
+			# label_fmt = lambda x,y: f"{text} {x:0d}\n£{y:.2f}"
 
-		self.balance_plot.plot(x, y, c='cyan', marker='o', ms=8, mec='k', lw=3,
-			hover_labels = dict(fmt = label_fmt))
+		self.balance_plot.plot(x, y, c='cyan', marker='o', ms=8, mec='k', lw=3)
+			# hover_labels = dict(fmt = label_fmt))
 		self.balance_plot.ax.set_xlabel(text, fontsize=15, c="white")
 		self.balance_plot.ax.grid(visible=True, axis='y', c='white', alpha=0.5)
 		self.balance_plot.show()
