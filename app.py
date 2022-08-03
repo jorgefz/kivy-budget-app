@@ -11,7 +11,6 @@ from kivy.metrics import dp, sp
 from kivy.core.window import Window
 #Window.size = (1000, 600)
 
-from graphscreen import GraphScreen
 import glob
 import pandas as pd
 import datetime as dt
@@ -29,7 +28,11 @@ from kivy.properties import (
 	ReferenceListProperty
 )
 
+from typing import Union
+
 from graph import PlotWidget, DonutPlot
+from graphscreen import GraphScreen
+from datascreen import DataScreen
 
 class HomeScreen(MDScreen):
 
@@ -45,37 +48,6 @@ class HomeScreen(MDScreen):
 			self.datetime_label.text = self.date
 
 
-class DataTableScreen(MDScreen):
-
-	dataset = ObjectProperty(None)
-	'''Pandas dataframe that holds financial data'''
-
-	columns = ListProperty([])
-	'''Column names to display'''
-
-	def generate_row_data(self) -> pd.DataFrame:
-		data = [
-			list(row[self.columns])
-			for index,row in self.dataset.iterrows() ]
-		return data
-
-	def load_table(self):
-		self.table_widget = MDDataTable(
-			size_hint= (0.9, 0.8),
-			pos_hint= {"center_x": 0.5, "center_y": 0.55},
-			use_pagination = True,
-			rows_num = 7,
-			column_data = [
-				("Date",    dp(21)),
-				("Amount",  dp(18)),
-				("Balance", dp(18)) ],
-			row_data = self.generate_row_data(),
-		)
-		self.add_widget(self.table_widget)
-
-	def on_enter(self):
-		self.clear_widgets()
-		self.load_table()
 
 	
 def get_daily_data(dataset: pd.DataFrame)-> pd.DataFrame:
@@ -108,26 +80,33 @@ class MainApp(MDApp):
 		}
 		self.dataset = self.dataset.rename(names, axis='columns')
 
-		# extract month names
-		month_nums = [int(date[3:5]) for date in self.dataset['date']]
+		# generate datetime objects
+		self.dataset['datetime'] = [
+			dt.datetime.strptime(d,"%d/%m/%Y")
+			for d in self.dataset['date'] ]
+
+		# extract inidividual date components
+		month_nums = [date.month for date in self.dataset['datetime']]
 		month_names = [ calendar.month_name[n] for n in month_nums]
 		self.dataset['month'] = month_names
+		self.dataset['day']  = [date.day  for date in self.dataset['datetime']]
+		self.dataset['year'] = [date.year for date in self.dataset['datetime']]
 
-		# extract weekdays
-		weekday_nums = [dt.datetime.strptime(date,"%d/%m/%Y").weekday() for date in self.dataset['date']]
+		# extract weekdays names
+		weekday_nums = [date.weekday() for date in self.dataset['datetime']]
 		weekday_names = [calendar.day_name[n] for n in weekday_nums]
 		self.dataset['weekday'] = weekday_names
-		self.dataset['day'] = [int(date[0:2]) for date in self.dataset['date']]
-		self.dataset['year'] = [int(date[6:]) for date in self.dataset['date']]
 
 		# calculate transaction amounts (negative is expense, positive is income)
 		debit  = self.dataset['expense']
-		credit = self.dataset['income']  
+		credit = self.dataset['income'] 
 		self.dataset['amount'] = [-d if not np.isnan(d) else c for c,d in zip(credit,debit)]
 
+
 	@staticmethod
-	def sterling(amount: float):
-		return f"£{amount:.2f}"
+	def sterling(amount: Union[float,str]):
+		if isinstance(amount,str): return '£'+amount
+		return f"£{amount:,.2f}"
 
 	def build(self):
 		self.dataset = MainApp.load_dataset()
@@ -144,7 +123,8 @@ class MainApp(MDApp):
 		self.this_year = str(self.this_year)
 
 		time_idx = self.dataset['month'] == self.last_month
-		
+		time_idx &= int(self.this_year) == self.dataset['year']
+
 		self.balance = self.dataset['balance'][time_idx].iloc[0]
 		self.expenses = self.dataset[time_idx]['expense'].sum()
 		self.income = self.dataset[time_idx]['income'].sum()
@@ -155,7 +135,9 @@ class MainApp(MDApp):
 		self.income_text =  MainApp.sterling(self.income)
 		self.profit_text =  MainApp.sterling(self.profit)
 
-		self.theme_cls.theme_style = "Dark"
+		# self.theme_cls.primary_palette = "BlueGray"
+		self.theme_str = "Light"
+		self.theme_cls.theme_style = self.theme_str
 
 		screen = Builder.load_file("layout.kv")
 
@@ -166,5 +148,5 @@ if __name__ == '__main__':
 	sm = ScreenManager()
 	sm.add_widget(HomeScreen(name="Home"))
 	sm.add_widget(GraphScreen(name="Graphs"))
-	sm.add_widget(DataTableScreen(name="Data"))
+	sm.add_widget(DataScreen(name="Data"))
 	MainApp().run()

@@ -62,6 +62,8 @@ class GraphScreen(MDScreen):
 
 	each_day = ObjectProperty(None)
 
+	theme_str = OptionProperty("Light", options = ["Dark", "Light"])
+
 	def setup_month_menu(self):
 		month_options = ["All Year"] + [calendar.month_name[i] for i in range(1,13)]
 
@@ -74,10 +76,13 @@ class GraphScreen(MDScreen):
 		self.month_dropdown = MDDropdownMenu(
 			caller =self.ids.month_selection,
 			items = month_items,
+			max_height = 150,
+			position = 'center',
 			width_mult = 2,
 		)
 	
 	def on_month_select(self, text):
+		self.ids.month_selection.text = text
 		self.balance_plot.clear()
 
 		# Display the data for one full year
@@ -101,7 +106,10 @@ class GraphScreen(MDScreen):
 			# Choose roughly the days at the beginning of each week plus the last one
 			xticks = [1, 7, 14, 21, 29]
 			self.balance_plot.ax.set_xticks(xticks)
-			# label_fmt = lambda x,y: f"{text} {x:0d}\n£{y:.2f}"
+		if len(list(x)) == 0:
+			self.ids.label_no_data.text = "No data to display"
+		else:
+			self.ids.label_no_data.text = ""
 
 		self.balance_plot.plot(x, y, c='cyan', marker='o', ms=8, mec='k', lw=3)
 			# hover_labels = dict(fmt = label_fmt))
@@ -122,10 +130,12 @@ class GraphScreen(MDScreen):
 		self.year_dropdown = MDDropdownMenu(
 			caller =self.ids.year_selection,
 			items = year_items,
+			position = "center",
 			width_mult = 2,
 		)
 
 	def on_year_select(self, text):
+		self.ids.year_selection.text = text
 		self.balance_plot.clear()
 
 		if (text == "All"):
@@ -144,12 +154,13 @@ class GraphScreen(MDScreen):
 
 	def on_pre_enter(self):
 		self.balance_plot = self.ids.balance_plot
-		self.balance_plot.set_theme('dark')
+		self.balance_plot.set_theme(self.theme_str.lower())
 
 		self.setup_month_menu()
 		self.setup_year_menu()
 
 		# set initial plot option
+		self.on_month_select("2022")
 		self.on_month_select("All Year")
 
 

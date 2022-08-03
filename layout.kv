@@ -1,9 +1,23 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 #:import calendar calendar
+#:import NoTransition kivy.uix.screenmanager.NoTransition
+#:import MDCard kivymd.uix.card.MDCard
+#:import MD3Card datascreen.MD3Card
 
 MDScreen:
 
-	MDRelativeLayout:
+	MDGridLayout:
+		rows: 2
+
+		ScreenManager:
+			id: screen_manager
+			size_hint_y: None
+			height: self.parent.height - rail.height
+			transition: NoTransition()
+			
+			HomeScreen:
+			GraphScreen:
+			DataScreen:
 
 		MDBottomNavigation:
 			id: rail
@@ -23,19 +37,10 @@ MDScreen:
 				text: 'Data'
 				on_tab_release: screen_manager.current = 'Data'
 
-		MDBoxLayout:
-			orientation: 'vertical'
+	#MDBoxLayout:
+	#	orientation: 'vertical'
 		
-			# MDTopAppBar:
-			# 	title: "Budget App"
-			# 	pos_hint: {"top": 1}
-			# 	size_hint_y: dp(0.06)
-			
-			ScreenManager:
-				id: screen_manager
-				HomeScreen:
-				GraphScreen:
-				DataTableScreen:
+		
 
 <HomeScreen>:
 	name: "Home"
@@ -138,11 +143,18 @@ MDScreen:
 	name: "Graphs"
 	dataset: app.dataset
 	each_day: app.each_day
+	theme_str: app.theme_str
+
+	MDLabel:
+		id: label_no_data
+		text: ""
+		pos_hint: {"center_x": 0.78,"center_y": 0.72}
+		theme_text_color: "Primary"
+		font_style: "H4"
+		font_size: self.width * 0.07
 
 	PlotWidget:
 		id: balance_plot
-		# size: (700,500)
-		# size_hint: (None,None)
 		pos_hint:  {'center_x': 0.55, 'center_y': 0.7}
 		adaptive_size: True
 		size_hint: (1.1,0.5)
@@ -171,10 +183,67 @@ MDScreen:
 		text: "2022"
 		font_size: 18
 		on_release: root.year_dropdown.open()
-	
 
-<DataTableScreen>:
+
+
+<DataScreen>:
+	id: data_screen
 	name: "Data"
 	dataset: app.dataset
-	columns: ["date", "amount", "balance"]
+	transaction_list: transaction_list
+	date_label: topbar_date
+	day_spent_label: day_money_spent
 
+	MDGridLayout:
+		id: data_screen_main_layout
+		cols: 1
+		rows: 3
+
+		MDTopAppBar:
+			id: topbar_date
+			pos_hint: {"top": 1}
+			elevation: 8
+			# size_hint_y: dp(0.10)
+			right_action_items: [["calendar-month", lambda x: root.show_date_picker(), "Choose date"]]
+
+		MDRelativeLayout:
+			size_hint_y: dp(0.25)
+			md_bg_color: [0.9, 0.9, 0.9]
+
+			MDLabel:
+				id: day_money_spent
+				text: app.sterling(12)
+				text_size: self.width, None
+    			size_hint: 1, None
+				pos_hint: {"center_y": 0.65}
+				halign: "center"
+				#elevation: 5
+				font_size: "45sp"
+		
+			MDLabel:
+				id: day_money_spent_subtext
+				text: "spent"
+				adaptive_size: True
+				pos_hint: {"center_x": 0.5, "center_y": 0.3}
+				#elevation: 5
+				font_size: "20sp"
+
+
+		MDScrollView:
+			scroll_wheel_distance: dp(15)
+			do_scroll_x: False
+			do_scroll_y: True
+		
+			MDGridLayout:
+				id: transaction_list
+				padding: 10,10
+				spacing: 10,10
+				size_hint_y: None
+				height: self.minimum_height
+				row_default_height: "55dp"
+
+
+
+
+					
+				
