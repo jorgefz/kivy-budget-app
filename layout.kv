@@ -4,6 +4,65 @@
 #:import MDCard kivymd.uix.card.MDCard
 #:import MD3Card datascreen.MD3Card
 
+
+
+<MonthDialogContent>:
+	size_hint:   (1, None)
+	height: dp(250)
+	orientation: "vertical"
+	big_date_label: monthdiag_date_big
+	year_label: monthdiag_year_label
+
+	MDGridLayout:
+		id: monthdiag_top_box
+		rows: 1
+		cols: 1
+		size_hint: (None,None)
+		size: (dp(270), dp(30))
+
+		MDRelativeLayout:
+			MDLabel:
+				id: monthdiag_date_big
+				pos_hint: {'center_y': 1.2}
+				text: "Aug. 2022"
+				halign: "left"
+				font_style: "H3"
+
+	MDGridLayout:
+		id: monthdiag_mid_box
+		rows: 1
+		cols: 5
+		size_hint: (1,None)
+		height: dp(40)
+
+		MDBoxLayout:
+			size_hint: (None, 1)
+			width: dp(15)
+		MDFlatButton:
+			id: monthdiag_year_label
+			text: "2022"
+			font_size: "20sp"
+		MDBoxLayout:
+			size_hint: (None, 1)
+			width: dp(80)
+		MDIconButton:
+			icon: "chevron-left"
+			on_release: root.on_year_select(root.year-1)
+		MDIconButton:
+			icon: "chevron-right"
+			on_release: root.on_year_select(root.year+1)
+
+	MDGridLayout:
+		id: monthdiag_calendar
+		pos_hint: {'center_x': 0.55}
+		rows: 4
+		cols: 3
+		padding: dp(8)
+        spacing: (8, 8)
+		
+		
+
+# MAIN
 MDScreen:
 
 	MDGridLayout:
@@ -37,19 +96,27 @@ MDScreen:
 				text: 'Data'
 				on_tab_release: screen_manager.current = 'Data'
 
-	#MDBoxLayout:
-	#	orientation: 'vertical'
-		
-		
-
 <HomeScreen>:
 	name: "Home"
 	datetime_label: datetime_label
 
+	MDTopAppBar:
+		id: topbar_month
+		pos_hint: {"top": 1}
+		elevation: 8
+		anchor_title: "center"
+		title: "Wednesday, 03 Aug 2022" # mock title
+		# size_hint_y: dp(0.10)
+		right_action_items: [["calendar-today", lambda x: root.on_month_dialog(), "Choose date"]]
+		left_action_items: [["menu", lambda x: x, "Menu"]]
+		on_parent:
+			self.ids.label_title.font_size = sp(18)
+			# needs to fit at least 'Wednesday, DD MMM YYYY'
+#
 	MDLabel:
 		id: datetime_label
 		text: root.date
-		pos_hint: {"center_y": 0.94}
+		pos_hint: {"center_y": 0.10}
 		halign: 'center'
 		theme_text_color: "Primary"
 		font_style: "H2"
@@ -203,8 +270,14 @@ MDScreen:
 			id: topbar_date
 			pos_hint: {"top": 1}
 			elevation: 8
+			anchor_title: "center"
 			# size_hint_y: dp(0.10)
 			right_action_items: [["calendar-month", lambda x: root.show_date_picker(), "Choose date"]]
+			left_action_items: [["menu", lambda x:0, "Menu"]]
+			on_parent:
+				self.ids.label_title.font_size = sp(18)
+				# needs to fit at least 'Wednesday, DD MMM YYYY'
+			
 
 		MDRelativeLayout:
 			size_hint_y: dp(0.25)

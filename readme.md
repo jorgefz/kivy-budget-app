@@ -28,9 +28,19 @@ Go to the online banking portal of your bank, download the CSV file of your tran
 
 ## To-Do
 
-- Set homescreen metrics to display data only for current month
+### General
+- Set homescreen metrics to display data only for current month✅
 - Find and choose metrics to display
 - Design best method of presenting the metrics
-- Functionality to import csv files
+- Functionality to import csv files manually
 - Add input csv files into a principal SQL database
 - Solve conflicts between new and existing data for overlaping timestamps
+- Fix global theme
+
+## Overview Tab
+- Copy top app bar with date selector here
+- Present metrics for this month using grid of cards, scrollview, and donut/line plots
+
+### Data Tab
+- Selecting date displays list of transactions and money spent✅
+- Add elevation to region where total money spent is shown

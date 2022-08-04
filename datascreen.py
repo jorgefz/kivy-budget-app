@@ -60,9 +60,24 @@ class TransactionCard(MD3Card):
 			text: app.sterling(2.00)
 			font_size: self.width * 0.2
 		"""
-		self.icon_obj = MDIcon(halign="left", icon=self.icon)
-		self.vendor_label = MDLabel(text = self.name, padding_x=15, halign="left")
-		self.amount_label = MDLabel(text = f"£{self.amount:,.2f}", halign="right")
+		self.icon_obj = MDIcon(
+			halign="left",
+			icon=self.icon
+		)
+		self.vendor_label = MDLabel(
+			text = self.name,
+			padding_x = 15,
+			halign = "left",
+			size_hint_x = dp(2),
+			#line_color = [1.0, 0.0, 0.0],
+			#line_width = dp(1)
+		)
+		self.amount_label = MDLabel(
+			text = f"£{self.amount:,.2f}",
+			halign="right",
+			#line_color = [1.0, 0.0, 0.0],
+			#line_width = dp(1)
+		)
 
 		self.add_widget(self.icon_obj)
 		self.add_widget(self.vendor_label)
@@ -110,9 +125,11 @@ class DataScreen(MDScreen):
 		tr_num = idx.sum()
 
 		# Update labels
-		self.date_label.title = self.chosen_date.strftime("%A, %d %B %Y")
+		self.date_label.title = self.chosen_date.strftime("%A, %d %b %Y")
 		day_amount = np.abs( dates['expense'].sum() )
 		self.day_spent_label.text = f"£{day_amount:,.2f}"
+
+		# print(self.date_label.ids.label_title.font_size)
 
 		# Update transaction cards
 		self.transaction_list.clear_widgets()
@@ -135,10 +152,10 @@ class DataScreen(MDScreen):
 
 		self.transaction_list.rows = tr_num
 		for tr in dates.iterrows():
-			print(tr)
+			_, data = tr
 			card = TransactionCard(
-				name = tr[1]['Transaction Description'],
-				amount = tr[1]['amount'],
+				name   = data['Transaction Description'],
+				amount = data['amount'],
 				**card_kw
 			)
 			self.transaction_list.add_widget(card)
