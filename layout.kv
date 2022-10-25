@@ -3,6 +3,7 @@
 #:import NoTransition kivy.uix.screenmanager.NoTransition
 #:import MDCard kivymd.uix.card.MDCard
 #:import MD3Card datascreen.MD3Card
+#:import dt datetime
 
 
 
@@ -27,7 +28,7 @@
 				text: "Aug. 2022"
 				halign: "left"
 				font_style: "H3"
-
+	MDSeparator:
 	MDGridLayout:
 		id: monthdiag_mid_box
 		rows: 1
@@ -96,115 +97,171 @@ MDScreen:
 				text: 'Data'
 				on_tab_release: screen_manager.current = 'Data'
 
+
+
 <HomeScreen>:
 	name: "Home"
-	datetime_label: datetime_label
+	topbar: topbar_month
+	scroll_content: homescreen_scroll_list
+	dataset: app.dataset
+	each_day: app.each_day
 
 	MDTopAppBar:
 		id: topbar_month
 		pos_hint: {"top": 1}
 		elevation: 8
 		anchor_title: "center"
-		title: "Wednesday, 03 Aug 2022" # mock title
+		title: f"{calendar.month_name[root.month]} {root.year}"
 		# size_hint_y: dp(0.10)
 		right_action_items: [["calendar-today", lambda x: root.on_month_dialog(), "Choose date"]]
 		left_action_items: [["menu", lambda x: x, "Menu"]]
 		on_parent:
 			self.ids.label_title.font_size = sp(18)
 			# needs to fit at least 'Wednesday, DD MMM YYYY'
-#
+
+	MDGridLayout:
+		id: homescreen_content_box
+		rows: 1
+		size_hint_y: None
+		height: root.height - topbar_month.height
+		padding: 10,10
+		spacing: 10,10
+
+		MDScrollView:
+			scroll_wheel_distance: dp(15)
+			do_scroll_x: False
+			do_scroll_y: True
+
+			HomeScreenScrollList:
+				id: homescreen_scroll_list
+				size_hint_y: None
+				height: root.height
+		
+<HomeScreenScrollList>:
+	rows: 12
+	padding: 10,10
+	spacing: 10,10
+	
+	homescreen: app.screen_manager.get_screen("Home")
+	balance_plot: balance_plot
+
 	MDLabel:
-		id: datetime_label
-		text: root.date
-		pos_hint: {"center_y": 0.10}
-		halign: 'center'
+		text: "BALANCE"
+		halign:'left'
 		theme_text_color: "Primary"
-		font_style: "H2"
-		font_size: self.width * 0.08
+		font_style: "Caption"
+		bold: True
+		font_size: sp(15)
+		size_hint: (1,None)
+		height: dp(17)
+
+	MDLabel:
+		id: balance_label
+		text: app.sterling(100)  # app.balance_text
+		halign:'left'
+		theme_text_color: "Primary"
+		font_style: "Caption"
+		bold: True
+		font_size: sp(30)
+		size_hint: (1,None)
+		height: dp(32)
 	
 	MDRelativeLayout:
-		pos_hint: {'center_x': 0.5, 'center_y': 0.75}
-		MDLabel:
-			text: "Balance"
-			pos_hint: {"center_y": 0.58}
-			halign:'center'
-			theme_text_color: "Primary"
-			font_style: "H3"
-			font_size: self.width * 0.10
-		MDLabel:
-			text: app.balance_text
-			pos_hint: {"center_y": 0.5}
-			halign:'center'
-			theme_text_color: "Primary"
-			font_style: "H2"
-			font_size: self.width * 0.12
-
-	MDRelativeLayout:
-		pos_hint: {'center_x': 0.25, 'center_y': 0.55}
-		MDLabel:
-			text: "Income"
-			pos_hint: {"center_y": 0.57}
-			halign:'center'
-			theme_text_color: "Primary"
-			font_style: "H3"
-			font_size: self.width * 0.08
-		MDLabel:
-			text: app.income_text
-			pos_hint: {"center_y": 0.5}
-			halign:'center'
-			theme_text_color: "Custom"
-			text_color: "#00FF00"
-			font_style: "H2"
-			font_size: self.width * 0.10
-
-	MDRelativeLayout:
-		pos_hint: {'center_x': 0.75, 'center_y': 0.55}
-		MDLabel:
-			text: "Expenses"
-			halign: "center"
-			pos_hint: {"center_y": 0.57, "center_x": 0.5}
-			theme_text_color: "Primary"
-			font_style: "H3"
-			font_size: self.width * 0.08
-		MDLabel:
-			text: app.expenses_text
-			pos_hint: {"center_y": 0.5, "center_x": 0.5}
-			halign: "center"
-			theme_text_color: "Custom"
-			text_color: "#FF0000"
-			font_style: "H2"
-			font_size: self.width * 0.10
+		line_color: [1,0,0]
+		line_width: dp(4)
+		
+		PlotWidget:
+			id: balance_plot
+			padding: 0,0
+			pos_hint:  {'center_x': 0.48, 'center_y': 0.4}
+			size_hint: None, None
+			size: root.width*1.3, self.parent.height*1.3
+			# line_color: [0,0,1]
+			# line_width: dp(2)
 	
-	MDRelativeLayout:
-		pos_hint: {'center_x': 0.25, 'center_y': 0.3}
-		MDLabel:
-			text: "Profit"
-			pos_hint: {"center_y": 0.55}
-			halign:'center'
-			theme_text_color: "Primary"
-			font_style: "H3"
-			font_size: self.width * 0.08
-		MDLabel:
-			text: app.profit_text
-			pos_hint: {"center_y": 0.48}
-			halign:'center'
-			theme_text_color: "Custom"
-			text_color: "#FFA500"
-			font_style: "H2"
-			font_size: self.width * 0.10
+	MDSeparator:
+	
+	MDLabel:
+		text: "CASH FLOW"
+		halign:'left'
+		theme_text_color: "Primary"
+		font_style: "Caption"
+		bold: True
+		font_size: sp(15)
+		size_hint: (1,None)
+		height: dp(17)
 
-	DonutPlot:
-		id: profit_donut
-		pos_hint: {'center_x': 0.75, 'center_y': 0.3}
-		adaptive_size: True
-		size_hint: 0.8,0.8
-		on_parent:
-			self.set_theme('dark')
-			self.clear()
-			pct = 100.0 * (1.0 - app.profit / app.income)
-			self.plot(pct, limits = [0,100], text = f"{int(pct)}%", \
-			fontsize = self.width*0.3, color = "orange", textcolor = "w")
-			self.show()
+	MDLabel:
+		id: cash_flow_label
+		text: app.sterling(100)
+		halign:'left'
+		theme_text_color: "Primary"
+		font_style: "Caption"
+		bold: True
+		font_size: sp(30)
+		size_hint: (1,None)
+		height: dp(32)
+
+	MDSeparator:
+	
+	MDLabel:
+		text: "INCOME"
+		halign:'left'
+		theme_text_color: "Primary"
+		font_style: "Caption"
+		bold: True
+		font_size: sp(15)
+		size_hint: (1,None)
+		height: dp(17)
+
+	MDLabel:
+		id: income_label
+		text: app.sterling(100)  # app.balance_text
+		halign:'left'
+		theme_text_color: "Primary"
+		font_style: "Caption"
+		bold: True
+		font_size: sp(30)
+		size_hint: (1,None)
+		height: dp(32)
+
+	MDSeparator:
+	
+	MDLabel:
+		text: "EXPENSES"
+		halign:'left'
+		theme_text_color: "Primary"
+		font_style: "Caption"
+		bold: True
+		font_size: sp(15)
+		size_hint: (1,None)
+		height: dp(17)
+
+	MDLabel:
+		id: expenses_label
+		text: app.sterling(100)  # app.balance_text
+		halign:'left'
+		theme_text_color: "Primary"
+		font_style: "Caption"
+		bold: True
+		font_size: sp(30)
+		size_hint: (1,None)
+		height: dp(32)
+	
+	# DonutPlot:
+	# 	id: profit_donut
+	# 	pos_hint: {'center_x': 0.75, 'center_y': 0.3}
+	# 	adaptive_size: True
+	# 	size_hint: 0.8,0.8
+	# 	on_parent:
+	# 		self.set_theme('dark')
+	# 		self.clear()
+	# 		pct = 100.0 * (1.0 - app.profit / app.income)
+	# 		self.plot(pct, limits = [0,100], text = f"{int(pct)}%", \
+	# 		fontsize = self.width*0.3, color = "orange", textcolor = "w")
+	# 		self.show()
+
+
 
 <GraphScreen>:
 	name: "Graphs"
@@ -264,7 +321,7 @@ MDScreen:
 	MDGridLayout:
 		id: data_screen_main_layout
 		cols: 1
-		rows: 3
+		rows: 4
 
 		MDTopAppBar:
 			id: topbar_date
@@ -301,6 +358,23 @@ MDScreen:
 				#elevation: 5
 				font_size: "20sp"
 
+			MDIconButton:
+				id: btn_next_day
+				icon: "chevron-right"
+				user_font_size: "64sp"
+				pos_hint: {"center_x": 0.85, "center_y": 0.5}
+				on_release:
+					root.on_date_choice(None, root.chosen_date + dt.timedelta(days=1), [])
+
+			MDIconButton:
+				id: btn_prev_day
+				icon: "chevron-left"
+				user_font_size: "64sp"
+				pos_hint: {"center_x": 0.15, "center_y": 0.5}
+				on_release:
+					root.on_date_choice(None, root.chosen_date - dt.timedelta(days=1), [])
+			
+		MDSeparator:
 
 		MDScrollView:
 			scroll_wheel_distance: dp(15)

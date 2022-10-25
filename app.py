@@ -22,7 +22,7 @@ from kivy.uix.label import Label as KivyLabel
 from kivy.metrics import dp, sp
 
 from kivy.core.window import Window
-#Window.size = (1000, 600)
+# Window.size = (1000, 600)
 
 import glob
 import pandas as pd
@@ -42,133 +42,17 @@ from kivy.properties import (
 )
 
 from typing import Union
+from functools import partial
 
 from graph import PlotWidget, DonutPlot
 from graphscreen import GraphScreen
 from datascreen import DataScreen
-from functools import partial
-
-
-class MonthDialogContent(MDBoxLayout):
-
-	big_date_label = ObjectProperty(None)
-	year_label = ObjectProperty(None)
-	
-	def __init__(self, *args, month=None, year=None, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		self.today = dt.datetime.today()
-		self.month = self.today.month if month is None else month
-		self.year  = self.today.year  if year is None else year
-
-		self.load_month_buttons()
-
-	def load_month_buttons(self):
-		calendar_grid = self.ids.monthdiag_calendar
-		item_count = calendar_grid.rows * calendar_grid.cols
-		month_abbr = [calendar.month_abbr[i] for i in range(1,item_count+1)]
-
-		calendar_grid.clear_widgets()
-
-		for i in range(item_count):
-			month = i+1
-
-			if (month == self.month):
-				button_cls = MDFillRoundFlatButton
-			elif (month == self.today.month and self.year == self.today.year):
-				button_cls = MDRectangleFlatButton
-			else:
-				button_cls = MDFlatButton
-
-			on_release = partial(self.on_month_select, i+1)
-			btn = button_cls(
-				text = month_abbr[i],
-				size = (dp(35), dp(35)),
-        		size_hint = (None, None),
-				on_release = on_release,
-			)
-			calendar_grid.add_widget( btn )
-
-	def update_labels(self):
-		self.year_label.text = str(self.year)
-		self.big_date_label.text = f"{calendar.month_abbr[self.month]}. {str(self.year)}"
-
-	def on_month_select(self, month_number, ins):
-		self.month = month_number
-		# refactor this - simply change button colors using instance
-		self.load_month_buttons()
-		self.update_labels()
-
-	def on_year_select(self, year, *largs):
-		self.year = year
-		# refactor this - check if selected year is now and change button colors
-		self.load_month_buttons()
-		self.update_labels()
-
-	def get_month_year(self):
-		return self.month, self.year
-
-
-class MonthPicker(MDDialog):
-
-	'''
-	Similar to a date picker, this dialog menu allows to choose only month and year.
-	Behaves exactly like MDDialog for opening and dismissing.
-
-	Parameters
-	----------
-		on_date_select:		(callable) Function called when a date is chosen
-							and the OK button is pressed. Must have the signature
-							`on_date_select(month:int, year:int)`
-
-		*args, **kwargs		Arguments passed to MDDialog
-	'''
-
-	def __init__(self, *args, on_date_select = lambda m,y:None, **kwargs):
-		kwargs['type'] = "custom"
-		kwargs['content_cls'] = MonthDialogContent()
-		kwargs['buttons'] = [
-			MDFlatButton(text="CANCEL", on_release=self.dismiss),
-			MDRaisedButton(text="OK",   on_release=self.on_date_chosen),
-		]
-		super().__init__(*args, **kwargs)
-		self.on_date_select = on_date_select
-
-	def get_selection(self):
-		return self.content_cls.get_month_year()
-
-	def on_date_chosen(self, *largs):
-		month, year = self.get_selection()
-		self.on_date_select(month, year)
-		self.dismiss()
+from homescreen import HomeScreen
 
 
 
-class HomeScreen(MDScreen):
-
-	datetime_label = ObjectProperty(None)
-
-	def on_month_select(self, month, year):
-		self.datetime_label.text = f"{calendar.month_name[month]} {year}"
-
-	def on_month_dialog(self):
-		self.month_dialog = MonthPicker(on_date_select = self.on_month_select)
-		self.month_dialog.open()
-	
-	def on_pre_enter(self):
-		
-		now = dt.datetime.now()
-		weekday = calendar.day_name[now.weekday()]
-
-		self.now = now
-		self.date = f"{weekday}, " + now.strftime("%d %B %Y")
-		self.time = str(now.strftime("%H:%M:%S"))
-
-		if self.datetime_label:
-			self.datetime_label.text = self.date
-
-
-
+class Dataset(pd.DataFrame):
+	pass
 
 	
 def get_daily_data(dataset: pd.DataFrame)-> pd.DataFrame:
@@ -184,6 +68,13 @@ def get_data_of_month(dataset: pd.DataFrame, month: str) -> pd.DataFrame:
 
 class MainApp(MDApp):
 
+	screen_manager = ObjectProperty(None)
+
+	def __init__(self, *args, **kwargs):
+		self.screen_manager = kwargs.pop("screen_manager", None)
+		super().__init__(*args, **kwargs)	
+
+
 	@staticmethod
 	def load_dataset() -> pd.DataFrame:
 		'''Load all csv files in the data folder and combine dataframes'''
@@ -196,10 +87,10 @@ class MainApp(MDApp):
 	def cleanup_dataset(self):
 		# simplify column names
 		names = {
-			'Transaction Date': 'date',
-			'Balance': 'balance',
-			'Debit Amount': 'expense',
-			'Credit Amount': 'income'
+			'Transaction Date' : 'date',
+			'Balance'          : 'balance',
+			'Debit Amount'     : 'expense',
+			'Credit Amount'    : 'income'
 		}
 		self.dataset = self.dataset.rename(names, axis='columns')
 
@@ -225,6 +116,10 @@ class MainApp(MDApp):
 		credit = self.dataset['income'] 
 		self.dataset['amount'] = [-d if not np.isnan(d) else c for c,d in zip(credit,debit)]
 
+		self.dataset['expense'].fillna(0.0, inplace=True)
+		self.dataset['income'].fillna(0.0, inplace=True)
+
+
 
 	@staticmethod
 	def sterling(amount: Union[float,str]):
@@ -232,6 +127,9 @@ class MainApp(MDApp):
 		return f"£{amount:,.2f}"
 
 	def build(self):
+
+		self.theme_cls.primary_palette = "Blue"
+
 		self.dataset = MainApp.load_dataset()
 		self.cleanup_dataset()
 
@@ -248,7 +146,8 @@ class MainApp(MDApp):
 		time_idx = self.dataset['month'] == self.last_month
 		time_idx &= int(self.this_year) == self.dataset['year']
 
-		self.balance = self.dataset['balance'][time_idx].iloc[0]
+		balances_row = self.dataset['balance'][time_idx]
+		self.balance = 0 if balances_row.shape[0] == 0 else balances_row.iloc[0]
 		self.expenses = self.dataset[time_idx]['expense'].sum()
 		self.income = self.dataset[time_idx]['income'].sum()
 		self.profit = self.income - self.expenses
@@ -272,4 +171,4 @@ if __name__ == '__main__':
 	sm.add_widget(HomeScreen(name="Home"))
 	sm.add_widget(GraphScreen(name="Graphs"))
 	sm.add_widget(DataScreen(name="Data"))
-	MainApp().run()
+	MainApp(screen_manager = sm).run()
